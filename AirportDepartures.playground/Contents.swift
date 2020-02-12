@@ -16,8 +16,82 @@ import UIKit
 //: e. Use a `String?` for the Terminal, since it may not be set yet (i.e.: waiting to arrive on time)
 //:
 //: f. Use a class to represent a `DepartureBoard` with a list of departure flights, and the current airport
+enum FlightStatus: String {
+    case enRoute
+    case scheduled = "Scheduled"
+    case canceled = "Cancelled"
+    case delayed
+    case boarding
+}
 
+enum Airlines: String {
+    case jetBlue = "jetBlue"
+    case deltaAir = "Delta Air Lines"
+    case klm = "KLM"
+}
+		
+struct Airport {
+    let name: String
+    let symbol: String
+    
+}
 
+struct Flight {
+    let name: String
+    var destination: Airport
+    let airline: Airlines
+//    let departure: Airport
+//    let arrival: Airport
+//    let scheduledDeparture: Date
+//    var arrivalTime: Date?
+    var status: FlightStatus
+    var departureTime: Date?
+    var terminal: String?
+//    var gate: String?
+}
+
+class DepartureBoard {
+    var flights: [Flight]
+    var location: Airport
+    
+    init(flights: [Flight], location: Airport) {
+        self.flights = flights
+        self.location = location
+    }
+    
+    func addFlight (_ flight: Flight) {
+        self.flights.append(flight)
+    }
+    
+    func alert() {
+        for flight in flights
+        {
+            if let departureTime = flight.departureTime, let terminal = flight.terminal
+            {
+                let date = DateFormatter.localizedString(from: departureTime, dateStyle: .none, timeStyle: .short)
+                switch flight.status
+                {
+                case .canceled:
+                    print("We're sorry your flight to \(flight.destination.name) was canceled,, here is a $500 voucher")
+                case .scheduled:
+                    print("Your flight to \(flight.destination.name) is scheduled to depart at \(date) from terminal: \(terminal)")
+                case .boarding:
+                    print("Your flight is boarding, please head to terminal: \(terminal) immediately. The doors are closing soon.")
+                default:
+                    print("Nothing")
+                }
+            } else
+            {
+                if flight.terminal == nil {
+                    print("Please see the nearest information desk for more details.")
+                } else {
+                    print("TBD")
+                }
+                
+            }
+        }
+    }
+}
 
 //: ## 2. Create 3 flights and add them to a departure board
 //: a. For the departure time, use `Date()` for the current time
@@ -30,6 +104,22 @@ import UIKit
 //:
 //: e. Stretch: Look at the API for [`DateComponents`](https://developer.apple.com/documentation/foundation/datecomponents?language=objc) for creating a specific time
 
+var bosPort = Airport(name: "Boston Logan Airport", symbol: "BOS")
+var laPort = Airport(name: "Los Angeles", symbol: "LA")
+var rochPort = Airport(name: "Rochester", symbol: "RO")
+
+var board = DepartureBoard(flights: [], location: bosPort)
+
+var date: Date = Calendar.current.date(from: DateComponents(calendar: .current, year: 2020, month: 2, day: 13, hour: -1, minute: 20) )!
+
+
+
+var flight1 = Flight(name: "B6118", destination: laPort , airline: .jetBlue, status: .scheduled, departureTime: date, terminal: "5")
+board.addFlight(flight1)
+var flight2 = Flight(name: "E15008", destination: rochPort , airline: .jetBlue, status: .canceled, departureTime: nil, terminal: "5")
+board.addFlight(flight2)
+var flight3 = Flight(name: "EK6701", destination: bosPort , airline: .jetBlue, status: .scheduled, departureTime: date, terminal: nil)
+board.addFlight(flight3)
 
 
 //: ## 3. Create a free-standing function that can print the flight information from the `DepartureBoard`
@@ -40,6 +130,14 @@ import UIKit
 //: c. Make your `FlightStatus` enum conform to `String` so you can print the `rawValue` String values from the `enum`. See the [enum documentation](https://docs.swift.org/swift-book/LanguageGuide/Enumerations.html).
 //:
 //: d. Print out the current DepartureBoard you created using the function
+
+//func printDepartures(departureBoard: DepartureBoard) {
+//    for flight in departureBoard.flights {
+//        print("Flight \(flight.name) Schedules arrival: \(flight.departureTime) status: \(flight.status.rawValue)")
+//    }
+//}
+
+//printDepartures(departureBoard: board)
 
 
 
@@ -61,6 +159,20 @@ import UIKit
 
 
 
+
+func printDepartures2(departureBoard: DepartureBoard) {
+    for flight in departureBoard.flights {
+        
+        if let departureTime = flight.departureTime {
+            let date = DateFormatter.localizedString(from: departureTime, dateStyle: .none, timeStyle: .short)
+            print("Destination: \(flight.destination.name) - Airline: \(flight.airline) - Flight \(flight.name) Departure Time: \(date) - Terminal: \(flight.terminal ?? " ") - Status: \(flight.status.rawValue)")
+        }
+        
+    }
+}
+
+printDepartures2(departureBoard: board)
+
 //: ## 5. Add an instance method to your `DepatureBoard` class (above) that can send an alert message to all passengers about their upcoming flight. Loop through the flights and use a `switch` on the flight status variable.
 //: a. If the flight is canceled print out: "We're sorry your flight to \(city) was canceled, here is a $500 voucher"
 //:
@@ -75,6 +187,8 @@ import UIKit
 //: d. Call the `alertPassengers()` function on your `DepartureBoard` object below
 //:
 //: f. Stretch: Display a custom message if the `terminal` is `nil`, tell the traveler to see the nearest information desk for more details.
+
+board.alert()
 
 
 
@@ -97,5 +211,15 @@ import UIKit
 //:
 //: f. Stretch: Use a [`NumberFormatter`](https://developer.apple.com/documentation/foundation/numberformatter) with the `currencyStyle` to format the amount in US dollars.
 
+func calculateAirfare(checkedBags: Int, distance: Int, travelers: Int) -> Double {
+    let price: Double = ( Double(checkedBags) * 25 + Double(distance) * 0.10) * Double(travelers)
+    
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .currency
+    formatter.locale = Locale.current
+    
+    print(formatter.string(from: NSNumber(value: price)) ?? "Invalid")
+    return price
+}
 
-
+calculateAirfare(checkedBags: 2, distance: 2000, travelers: 3)
